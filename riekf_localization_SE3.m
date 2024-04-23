@@ -23,23 +23,8 @@ set(groot, 'defaultAxesTickLabelInterpreter','latex');
 set(groot, 'defaultLegendInterpreter','latex');
 
 
-
-X0T = [0; 0 ;5];%% initial position of the virtual target
-X0M = [0 0 0];% initial position of the missile
-T = 2*25;
-
-V_M = 15; %%speed of the missile
-
-V_T = 17; %% speed of the target
-
-K = V_T/V_M; % only the ratio maters for determining the behaviour of the system
-%K = 1.; %% if the ratio is < 1, the missile will catch up to the target, which is not what we want, so K >= 1
-Kp = 1.5;
-V0M = [6 1 9];% direction the missile's velocity
-
-V0M = V0M/sqrt(V0M*V0M'); %% normalize since the ratio
-
-out=sim('./trajectory_m.slx');
+%TODO create trajecotory generator
+out=sim('./generator_m.slx');
 
 subplot(2,1,1)
 grid on
@@ -145,71 +130,30 @@ sys.f = @(x,u) fx(x,u);
  sys.N = 0.15^2;%We measure 1 value, so the matrix is just a constant
 % sys.N = diag([0.5^2; 0.5^2]);
 % 
-% % se(2) Lie algebra basis twist = vec(\omega, v_1, v_2)
-            Gox = [0     0     0   0   0;
-                   0     0     -1   0   0;
-                   0     1     0   0   0;
-                   0     0     0   0   0;
-                   0     0     0   0   0]; % omega_x
+% % so(3) Lie algebra basis twist 
+            Gox = [0     0     0  ;
+                   0     0     -1  ;
+                   0     1     0   ]; % omega_x
             
-            Goy = [0     0     1   0   0;
-                   0     0     0   0   0;
-                   -1     0     0   0   0;
-                   0     0     0   0   0;
-                   0     0     0   0   0]; % omega_y
+            Goy = [0     0     1   ;
+                   0     0     0   ;
+                   -1     0     0  ]; % omega_y
 
-            Goz = [0     -1     0   0   0;
-                   1     0     0   0   0;
-                   0     0     0   0   0;
-                   0     0     0   0   0;
-                   0     0     0   0   0]; % omega_z
-%%%%%%
-            Gvx = [0     0     0   1   0;
-                   0     0     0   0   0;
-                   0     0     0   0   0;
-                   0     0     0   0   0;
-                   0     0     0   0   0]; % v_x
-            
-            Gvy = [0     0     0   0   0;
-                   0     0     0   1   0;
-                   0     0     0   0   0;
-                   0     0     0   0   0;
-                   0     0     0   0   0]; % v_y
+            Goz = [0     -1     0  ;
+                   1     0     0   ;
+                   0     0     0   ]; % omega_z
+ 
 
-            Gvz = [0     0     0   0   0;
-                   0     0     0   0   0;
-                   0     0     0   1   0;
-                   0     0     0   0   0;
-                   0     0     0   0   0]; % v_z
-%%%%%
-            Gpx = [0     0     0   0   1;
-                   0     0     0   0   0;
-                   0     0     0   0   0;
-                   0     0     0   0   0;
-                   0     0     0   0   0]; % p_x
-
-            Gpy = [0     0     0   0   0;
-                   0     0     0   0   1;
-                   0     0     0   0   0;
-                   0     0     0   0   0;
-                   0     0     0   0   0]; % p_y
-
-            Gpz = [0     0     0   0   0;
-                   0     0     0   0   0;
-                   0     0     0   0   1;
-                   0     0     0   0   0;
-                   0     0     0   0   0
-                   ]; % p_z
 % % now make the twist noisy! in practice the velocity readings are not
 % % perfect.
 % % Cholesky factor of covariance for sampling
 %LQ = chol(sys.Q, 'lower');
 u_n=cell(length(out.Missile.Data(:,1)),1);
-u_n{1}=zeros(5);
+u_n{1}=zeros(3);
 for i = 1:length(u)
     noise = sys.Q* randn(9,1);
     %noise = [0,0,0];
-    N = Gox * noise(1) + Goy * noise(2) + Goz * noise(3) + Gvx * noise(4) + Gvy * noise(5) + Gvz * noise(6) + Gpx * noise(7) + Gpy * noise(8) + Gpz * noise(9);
+    N = Gox * noise(1) + Goy * noise(2) + Goz * noise(3);
     u_n{i} = u{i} + N;
 end
 
