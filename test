@@ -1,0 +1,25 @@
+clear all
+close all
+clc
+
+
+
+
+angle = -pi/2:0.01:pi/2;
+
+
+v = @(x) [cos(x),sin(x),0];
+H = cell(length(angle));
+H{1} = eye(3);%Initial conditions
+
+for i = 1:length(out.Missile.Data(:,1))
+
+    H{i} = Rod(angle(i),v(angle(i)));
+end
+
+
+
+function mat = Rod(theta,x)
+skew = [0 -x(3) x(2) ; x(3) 0 -x(1) ; -x(2) x(1) 0 ];
+mat = eye(3) + sin(theta)*skew + (1-cos(theta))*skew^2;
+end
